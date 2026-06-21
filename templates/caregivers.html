@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caregivers — Clinical Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>body { font-family: 'Courier New', Courier, monospace; }</style>
+</head>
+<body class="min-h-screen bg-[#111827] text-white" style="text-transform:uppercase;letter-spacing:.03em">
+
+{% set active = 'caregivers' %}
+{% include '_nav.html' %}
+
+<div class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat, msg in messages %}
+            <div class="mb-4 px-4 py-3 rounded border text-xs normal-case
+                {% if cat=='error' %}bg-red-900/40 border-red-700 text-red-300
+                {% elif cat=='warning' %}bg-yellow-900/40 border-yellow-700 text-yellow-300
+                {% else %}bg-green-900/40 border-green-700 text-green-300{% endif %}">{{ msg }}</div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-bold text-red-400 tracking-widest">Caregivers</h1>
+        {% if current_user.role == 'admin' %}
+        <a href="/caregivers/add"
+           class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition-colors shadow shadow-red-900/40">
+            + Add Caregiver
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 max-w-sm">
+        <div class="bg-gray-900 border border-red-800 rounded-lg px-4 py-3 text-center">
+            <div class="text-2xl font-bold text-red-400">{{ caregivers|length }}</div>
+            <div class="text-xs text-gray-500 mt-0.5">Total Caregivers</div>
+        </div>
+        {% set assigned = caregivers | selectattr('patient_count', 'defined') | list %}
+        <div class="bg-gray-900 border border-red-800 rounded-lg px-4 py-3 text-center">
+            <div class="text-2xl font-bold text-emerald-400">{{ caregivers|length }}</div>
+            <div class="text-xs text-gray-500 mt-0.5">Registered</div>
+        </div>
+    </div>
+
+    {% if caregivers %}
+    <div class="bg-gray-900 border border-red-800 rounded-lg overflow-hidden">
+        <div class="bg-red-900/40 px-4 py-3 border-b border-red-800">
+            <h2 class="text-sm font-bold text-white tracking-widest">All Caregivers</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+                <thead>
+                    <tr class="border-b border-red-900/30 text-gray-500">
+                        <th class="px-4 py-3 text-left font-semibold">Name</th>
+                        <th class="px-4 py-3 text-left font-semibold">Email</th>
+                        <th class="px-4 py-3 text-left font-semibold">Phone</th>
+                        <th class="px-4 py-3 text-left font-semibold">Registered</th>
+                        {% if current_user.role == 'admin' %}
+                        <th class="px-4 py-3 text-left font-semibold">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cg in caregivers %}
+                    <tr class="border-b border-red-900/20 hover:bg-red-900/10 transition-colors">
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-full bg-red-700/50 flex items-center justify-center text-white font-bold flex-shrink-0">
+                                    {{ cg.name[0]|upper }}
+                                </div>
+                                <span class="text-white">{{ cg.name }}</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-gray-400 normal-case">{{ cg.email }}</td>
+                        <td class="px-4 py-3 text-gray-400 normal-case">{{ cg.phone or '—' }}</td>
+                        <td class="px-4 py-3 text-gray-500 normal-case">{{ cg.created_at }}</td>
+                        {% if current_user.role == 'admin' %}
+                        <td class="px-4 py-3">
+                            <a href="/caregivers/{{ cg.id }}/edit"
+                               class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs px-3 py-1.5 rounded transition-colors">
+                                Edit
+                            </a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="bg-gray-900 border border-red-900/30 rounded-lg px-6 py-16 text-center">
+        <svg class="w-12 h-12 text-gray-700 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <p class="text-gray-500 text-sm normal-case">No caregivers registered yet.</p>
+        {% if current_user.role == 'admin' %}
+        <a href="/caregivers/add"
+           class="inline-block mt-4 bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-5 py-2 rounded transition-colors">
+            Add First Caregiver
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>
