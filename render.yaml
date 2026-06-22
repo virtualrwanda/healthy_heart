@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: healthy_heart
+    runtime: python
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
